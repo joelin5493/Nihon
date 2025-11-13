@@ -23,7 +23,7 @@
 <body>
 
 <h1>五十音練習（清音 / 濁音 / 半濁音 / 拗音 / 字卡模式）</h1>
-<button onclick="forceVoiceStart()" style="font-size:22px;margin:10px;padding:10px 20px;">🔊 點我啟動語音（iPhone 必按）</button>
+<button id="voiceStartBtn" style="font-size:22px;margin:10px;padding:10px 20px;">🔊 點我啟動語音（iPhone 必按）</button>
 
 <!-- 類型 -->
 <div class="section">
@@ -51,7 +51,7 @@
 </div>
 
 <!-- 按鈕 -->
-<button id="startBtn" onclick="unlockVoice(); newQuestion()">開始 / 下一題</button>
+<button id="startBtn" onclick="unlockVoice(); newQuestion()" style="font-size:22px;margin:10px;padding:10px 20px;">開始 / 下一題</button>
 
 <div id="kana">あ</div>
 <div id="romaji">a</div>
@@ -77,6 +77,16 @@ function forceVoiceStart(){
 
     speechSynthesis.speak(u);
 }
+
+document.getElementById("voiceStartBtn").addEventListener("click", function(){
+    let u = new SpeechSynthesisUtterance("あ");
+    u.lang = "ja-JP";
+    u.onend = function(){
+        voiceUnlocked = true;
+        alert("語音已啟動，可以正常發音了！");
+    };
+    speechSynthesis.speak(u);
+});
 
 function unlockVoice(){
     if (voiceUnlocked) return;
