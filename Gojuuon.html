@@ -65,39 +65,6 @@
 
 let voiceUnlocked = false;
 
-function forceVoiceStart(){
-    let u = new SpeechSynthesisUtterance("あ");
-    u.lang = "ja-JP";
-
-    u.onend = () => {
-        voiceUnlocked = true;
-        alert("語音已啟動，之後會正常發音！");
-    };
-
-    speechSynthesis.speak(u);
-}
-
-function unlockVoice(){
-    //if (voiceUnlocked) return;
-
-    // iOS 必須發真正的聲音才能解鎖，空白不行
-    let u = new SpeechSynthesisUtterance(" ");
-    u.lang = "ja-JP";
-
-    // iOS 引擎初始化至少需要 300–800ms
-    u.onend = () => {
-        setTimeout(() => {
-            voiceUnlocked = true;
-            console.log("語音已解鎖！");
-        }, 600);
-    };
-
-    try {
-        speechSynthesis.speak(u);
-    } catch(e) {
-        console.warn("語音解鎖失敗：", e);
-    }
-}
 
 // ------------------------------------------------------
 // 假名資料
