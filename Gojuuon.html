@@ -78,10 +78,10 @@ function forceVoiceStart(){
 }
 
 function unlockVoice(){
-    if (voiceUnlocked) return;
+    //if (voiceUnlocked) return;
 
     // iOS 必須發真正的聲音才能解鎖，空白不行
-    let u = new SpeechSynthesisUtterance("あ");
+    let u = new SpeechSynthesisUtterance(" ");
     u.lang = "ja-JP";
 
     // iOS 引擎初始化至少需要 300–800ms
