@@ -67,8 +67,11 @@ function unlockVoice(){
     if (voiceUnlocked) return;
 
     try {
-        let u = new SpeechSynthesisUtterance(" ");
+        let u = new SpeechSynthesisUtterance("あ");
         u.lang = "ja-JP";
+		 u.onend = () => {
+			setTimeout(() => { voiceUnlocked = true; }, 500);
+		};
         speechSynthesis.speak(u);
     } catch(e) {
         console.log("語音解鎖例外：", e);
@@ -137,6 +140,7 @@ function findKanaByRomaji(romaji, groups, useHira){
 // ------------------------------------------------------
 function speakKana(kana, fast=false){
     try {
+		if (!voiceUnlocked) return;
         let u = new SpeechSynthesisUtterance(kana);
         u.lang = "ja-JP";
         u.rate = fast ? 1.1 : 0.9;
