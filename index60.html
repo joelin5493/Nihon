@@ -67,7 +67,7 @@ function unlockVoice(){
     if (voiceUnlocked) return;
 
     try {
-        let u = new SpeechSynthesisUtterance("あ");
+        let u = new SpeechSynthesisUtterance(" ");
         u.lang = "ja-JP";
 		 u.onend = () => {
 			setTimeout(() => { voiceUnlocked = true; }, 500);
