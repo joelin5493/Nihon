@@ -48,6 +48,7 @@
     <label><input type="radio" name="qaMode" value="romaji2kana"> 羅馬音 → 假名</label>
 </div>
 
+<!-- 按鈕 -->
 <button onclick="unlockVoice(); newQuestion()">開始 / 下一題</button>
 
 <div id="kana">あ</div>
@@ -56,8 +57,29 @@
 <div id="options"></div>
 <div id="message"></div>
 
-
 <script>
+// ------------------------------------------------------
+// iOS / Android 共同適用的語音解鎖
+// ------------------------------------------------------
+let voiceUnlocked = false;
+
+function unlockVoice(){
+    if (voiceUnlocked) return;
+
+    try {
+        let u = new SpeechSynthesisUtterance(" ");
+        u.lang = "ja-JP";
+		 u.onend = () => {
+			setTimeout(() => { voiceUnlocked = true; }, 500);
+		};
+        speechSynthesis.speak(u);
+    } catch(e) {
+        console.log("語音解鎖例外：", e);
+    }
+
+    voiceUnlocked = true;
+}
+
 // ------------------------------------------------------
 // 假名資料
 // ------------------------------------------------------
@@ -107,37 +129,36 @@ function hiraToKata(str){
 function findKanaByRomaji(romaji, groups, useHira){
     for(let g of groups){
         for(let [kana, roma] of g){
-            if(romaji === roma){
-                return useHira ? kana : hiraToKata(kana);
-            }
+            if(romaji === roma) return useHira ? kana : hiraToKata(kana);
         }
     }
     return "";
+}
+
+// ------------------------------------------------------
+// 語音播放（支援 iOS + Android）
+// ------------------------------------------------------
+function speakKana(kana, fast=false){
+    try {
+		if (!voiceUnlocked) return;
+        let u = new SpeechSynthesisUtterance(kana);
+        u.lang = "ja-JP";
+        u.rate = fast ? 1.1 : 0.9;
+        speechSynthesis.speak(u);
+    } catch(e){
+        console.log("語音失敗：", e);
+    }
 }
 
 let selectedGroups = [];
 let answerRomaji = "";
 let answerKana = "";
 let useHira = true;
-
 let flashStep = 0;
 
-let voiceUnlocked = false;
-
-function unlockVoice(){
-    if (voiceUnlocked) return;
-    let u = new SpeechSynthesisUtterance("");
-    speechSynthesis.speak(u);
-    voiceUnlocked = true;
-}
-
-function speakKana(kana, fast=false){
-    let u = new SpeechSynthesisUtterance(kana);
-    u.lang = "ja-JP";
-    u.rate = fast ? 1.1 : 0.9;
-    speechSynthesis.speak(u);
-}
-
+// ------------------------------------------------------
+// 字卡翻面
+// ------------------------------------------------------
 function flashClick(){
     const romajiDiv = document.getElementById("romaji");
 
@@ -152,6 +173,9 @@ function flashClick(){
     }
 }
 
+// ------------------------------------------------------
+// 產生題目
+// ------------------------------------------------------
 function newQuestion(){
     useHira = document.querySelector("input[name=type]:checked").value === "hiragana";
     const mode = document.querySelector("input[name=mode]:checked").value;
@@ -190,7 +214,6 @@ function newQuestion(){
         optDiv.style.display = "none";
         romajiDiv.style.display = "none";
         flashStep = 0;
-
         kanaDiv.onclick = flashClick;
         return;
     }
@@ -200,24 +223,22 @@ function newQuestion(){
     optDiv.style.display = "block";
     romajiDiv.style.display = "none";
 
-    // ⭐ 避免使用 "options" 這個變數名稱
     let choiceSet = new Set();
 
     if(qaMode === "kana2romaji"){
-        // 題目：假名
         kanaDiv.textContent = answerKana;
-
         choiceSet.add(answerRomaji);
+
         while(choiceSet.size < 6){
             let g = pool[Math.floor(Math.random()*pool.length)];
             let r = g[Math.floor(Math.random()*g.length)][1];
             choiceSet.add(r);
         }
-    } else {
-        // 題目：羅馬音
-        kanaDiv.textContent = answerRomaji;
 
+    } else {
+        kanaDiv.textContent = answerRomaji;
         choiceSet.add(answerKana);
+
         while(choiceSet.size < 6){
             let g = pool[Math.floor(Math.random()*pool.length)];
             let [kana] = g[Math.floor(Math.random()*g.length)];
@@ -227,24 +248,20 @@ function newQuestion(){
     }
 
     let choiceList = Array.from(choiceSet).sort(()=>Math.random()-0.5);
-
     optDiv.innerHTML = "";
 
-    // 建立按鈕
     choiceList.forEach(opt => {
         let btn = document.createElement("button");
         btn.className = "option-btn";
         btn.textContent = opt;
 
         btn.onclick = () => {
-            // 正確發音：唸自己對應的假名
             if(qaMode === "kana2romaji"){
                 let kanaSpeak = findKanaByRomaji(opt, selectedGroups, useHira);
                 speakKana(kanaSpeak);
             } else {
                 speakKana(opt);
             }
-
             checkAnswer(opt, qaMode);
         };
 
