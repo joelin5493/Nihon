@@ -23,7 +23,7 @@
 <body>
 
 <h1>五十音練習（清音 / 濁音 / 半濁音 / 拗音 / 字卡模式）</h1>
-<div class="note">🔊 iPhone 使用者請先按「開始 / 下一題」以啟動語音</div>
+<button onclick="forceVoiceStart()" style="font-size:22px;margin:10px;padding:10px 20px;">🔊 點我啟動語音（iPhone 必按）</button>
 
 <!-- 類型 -->
 <div class="section">
@@ -63,7 +63,20 @@
 // ------------------------------------------------------
 // iOS / Android 語音解鎖（新版可用）
 // ------------------------------------------------------
+
 let voiceUnlocked = false;
+
+function forceVoiceStart(){
+    let u = new SpeechSynthesisUtterance("あ");
+    u.lang = "ja-JP";
+
+    u.onend = () => {
+        voiceUnlocked = true;
+        alert("語音已啟動，之後會正常發音！");
+    };
+
+    speechSynthesis.speak(u);
+}
 
 function unlockVoice(){
     if (voiceUnlocked) return;
