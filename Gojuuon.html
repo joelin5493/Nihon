@@ -127,11 +127,6 @@ function findKanaByRomaji(romaji, groups, useHira){
 // 播放語音（iOS + Android）
 // ------------------------------------------------------
 function speakKana(kana, fast=false){
-    if (!voiceUnlocked) {
-        console.log("語音尚未解鎖");
-        return;
-    }
-
     let u = new SpeechSynthesisUtterance(kana);
     u.lang = "ja-JP";
     u.rate = fast ? 1.1 : 0.9;
