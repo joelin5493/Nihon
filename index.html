@@ -17,11 +17,13 @@
     }
     #message { font-size: 22px; height: 40px; color: red; }
     .section { margin: 15px 0; }
+    .note { color: #555; font-size: 16px; margin-top: 10px; }
 </style>
 </head>
 <body>
 
 <h1>五十音練習（清音 / 濁音 / 半濁音 / 拗音 / 字卡模式）</h1>
+<button onclick="forceVoiceStart()" style="font-size:22px;margin:10px;padding:10px 20px;">🔊 點我啟動語音（iPhone 必按）</button>
 
 <!-- 類型 -->
 <div class="section">
@@ -48,7 +50,8 @@
     <label><input type="radio" name="qaMode" value="romaji2kana"> 羅馬音 → 假名</label>
 </div>
 
-<button onclick="unlockVoice(); newQuestion()">開始 / 下一題</button>
+<!-- 按鈕 -->
+<button id="startBtn" onclick="unlockVoice(); newQuestion()">開始 / 下一題</button>
 
 <div id="kana">あ</div>
 <div id="romaji">a</div>
@@ -56,8 +59,47 @@
 <div id="options"></div>
 <div id="message"></div>
 
-
 <script>
+// ------------------------------------------------------
+// iOS / Android 語音解鎖（新版可用）
+// ------------------------------------------------------
+
+let voiceUnlocked = false;
+
+function forceVoiceStart(){
+    let u = new SpeechSynthesisUtterance("あ");
+    u.lang = "ja-JP";
+
+    u.onend = () => {
+        voiceUnlocked = true;
+        alert("語音已啟動，之後會正常發音！");
+    };
+
+    speechSynthesis.speak(u);
+}
+
+function unlockVoice(){
+    if (voiceUnlocked) return;
+
+    // iOS 必須發真正的聲音才能解鎖，空白不行
+    let u = new SpeechSynthesisUtterance("あ");
+    u.lang = "ja-JP";
+
+    // iOS 引擎初始化至少需要 300–800ms
+    u.onend = () => {
+        setTimeout(() => {
+            voiceUnlocked = true;
+            console.log("語音已解鎖！");
+        }, 600);
+    };
+
+    try {
+        speechSynthesis.speak(u);
+    } catch(e) {
+        console.warn("語音解鎖失敗：", e);
+    }
+}
+
 // ------------------------------------------------------
 // 假名資料
 // ------------------------------------------------------
@@ -98,6 +140,7 @@ const data = {
     ]
 };
 
+// 假名 → 片假名
 function hiraToKata(str){
     return str.replace(/[\u3041-\u3096]/g, ch =>
         String.fromCharCode(ch.charCodeAt(0) + 0x60)
@@ -107,37 +150,42 @@ function hiraToKata(str){
 function findKanaByRomaji(romaji, groups, useHira){
     for(let g of groups){
         for(let [kana, roma] of g){
-            if(romaji === roma){
+            if(romaji === roma)
                 return useHira ? kana : hiraToKata(kana);
-            }
         }
     }
     return "";
+}
+
+// ------------------------------------------------------
+// 播放語音（iOS + Android）
+// ------------------------------------------------------
+function speakKana(kana, fast=false){
+    if (!voiceUnlocked) {
+        console.log("語音尚未解鎖");
+        return;
+    }
+
+    let u = new SpeechSynthesisUtterance(kana);
+    u.lang = "ja-JP";
+    u.rate = fast ? 1.1 : 0.9;
+
+    try {
+        speechSynthesis.speak(u);
+    } catch(e){
+        console.warn("語音播放失敗：", e);
+    }
 }
 
 let selectedGroups = [];
 let answerRomaji = "";
 let answerKana = "";
 let useHira = true;
-
 let flashStep = 0;
 
-let voiceUnlocked = false;
-
-function unlockVoice(){
-    if (voiceUnlocked) return;
-    let u = new SpeechSynthesisUtterance("");
-    speechSynthesis.speak(u);
-    voiceUnlocked = true;
-}
-
-function speakKana(kana, fast=false){
-    let u = new SpeechSynthesisUtterance(kana);
-    u.lang = "ja-JP";
-    u.rate = fast ? 1.1 : 0.9;
-    speechSynthesis.speak(u);
-}
-
+// ------------------------------------------------------
+// 字卡翻面
+// ------------------------------------------------------
 function flashClick(){
     const romajiDiv = document.getElementById("romaji");
 
@@ -152,6 +200,9 @@ function flashClick(){
     }
 }
 
+// ------------------------------------------------------
+// 產生題目
+// ------------------------------------------------------
 function newQuestion(){
     useHira = document.querySelector("input[name=type]:checked").value === "hiragana";
     const mode = document.querySelector("input[name=mode]:checked").value;
@@ -190,7 +241,6 @@ function newQuestion(){
         optDiv.style.display = "none";
         romajiDiv.style.display = "none";
         flashStep = 0;
-
         kanaDiv.onclick = flashClick;
         return;
     }
@@ -200,24 +250,22 @@ function newQuestion(){
     optDiv.style.display = "block";
     romajiDiv.style.display = "none";
 
-    // ⭐ 避免使用 "options" 這個變數名稱
     let choiceSet = new Set();
 
     if(qaMode === "kana2romaji"){
-        // 題目：假名
         kanaDiv.textContent = answerKana;
-
         choiceSet.add(answerRomaji);
+
         while(choiceSet.size < 6){
             let g = pool[Math.floor(Math.random()*pool.length)];
             let r = g[Math.floor(Math.random()*g.length)][1];
             choiceSet.add(r);
         }
-    } else {
-        // 題目：羅馬音
-        kanaDiv.textContent = answerRomaji;
 
+    } else {
+        kanaDiv.textContent = answerRomaji;
         choiceSet.add(answerKana);
+
         while(choiceSet.size < 6){
             let g = pool[Math.floor(Math.random()*pool.length)];
             let [kana] = g[Math.floor(Math.random()*g.length)];
@@ -227,24 +275,20 @@ function newQuestion(){
     }
 
     let choiceList = Array.from(choiceSet).sort(()=>Math.random()-0.5);
-
     optDiv.innerHTML = "";
 
-    // 建立按鈕
     choiceList.forEach(opt => {
         let btn = document.createElement("button");
         btn.className = "option-btn";
         btn.textContent = opt;
 
         btn.onclick = () => {
-            // 正確發音：唸自己對應的假名
             if(qaMode === "kana2romaji"){
                 let kanaSpeak = findKanaByRomaji(opt, selectedGroups, useHira);
                 speakKana(kanaSpeak);
             } else {
                 speakKana(opt);
             }
-
             checkAnswer(opt, qaMode);
         };
 
