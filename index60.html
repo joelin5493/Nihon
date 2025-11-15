@@ -308,8 +308,7 @@ function newQuestion(){
     if(qaMode === "kana2romaji"){
         kanaDiv.textContent = answerKana;
         choiceSet.add(answerRomaji);
-
-        while(choiceSet.size < 6){
+        while(choiceSet.size < 5){
             let g = pool[Math.floor(Math.random()*pool.length)];
             let r = g[Math.floor(Math.random()*g.length)][1];
             choiceSet.add(r);
@@ -318,8 +317,7 @@ function newQuestion(){
     } else {
         kanaDiv.textContent = answerRomaji;
         choiceSet.add(answerKana);
-
-        while(choiceSet.size < 6){
+        while(choiceSet.size < 5){
             let g = pool[Math.floor(Math.random()*pool.length)];
             let [kana] = g[Math.floor(Math.random()*g.length)];
             let kanaOut = useHira ? kana : hiraToKata(kana);
