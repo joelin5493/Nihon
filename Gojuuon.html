@@ -242,6 +242,12 @@ function newQuestion(){
         let btn = document.createElement("button");
         btn.className = "option-btn";
         btn.textContent = opt;
+		
+		btn.style.cssText = `
+			font-size: 22px;
+			margin: 10px;
+			padding: 10px 20px;
+		`;
 
         btn.onclick = () => {
             if(qaMode === "kana2romaji"){
