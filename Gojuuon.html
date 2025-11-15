@@ -26,27 +26,27 @@
 
 <!-- 類型 -->
 <div class="section">
-    <label><input type="radio" name="type" value="hiragana" checked> 平假名</label>
-    <label><input type="radio" name="type" value="katakana"> 片假名</label>
+    <label class="big-label"><input class="big-radio" type="radio" name="type" value="hiragana" checked> 平假名</label>
+    <label class="big-label"><input class="big-radio" type="radio" name="type" value="katakana"> 片假名</label>
 </div>
 
 <!-- 題庫 -->
 <div class="section">
-    <label><input type="checkbox" id="chk-basic" checked> 清音</label>
-    <label><input type="checkbox" id="chk-dakuon"> 濁音</label>
-    <label><input type="checkbox" id="chk-handakuon"> 半濁音</label>
-    <label><input type="checkbox" id="chk-youon"> 拗音</label>
+    <label class="big-label"><input class="big-radio" type="checkbox" id="chk-basic" checked> 清音</label>
+    <label class="big-label"><input class="big-radio" type="checkbox" id="chk-dakuon"> 濁音</label>
+    <label class="big-label"><input class="big-radio" type="checkbox" id="chk-handakuon"> 半濁音</label>
+    <label class="big-label"><input class="big-radio" type="checkbox" id="chk-youon"> 拗音</label>
 </div>
 
 <!-- 模式 -->
 <div class="section">
-    <label><input type="radio" name="mode" value="quiz" checked> 測驗模式</label>
-    <label><input type="radio" name="mode" value="flashcard"> 字卡模式</label>
+    <label class="big-label"><input class="big-radio" type="radio" name="mode" value="quiz" checked> 測驗模式</label>
+    <label class="big-label"><input class="big-radio" type="radio" name="mode" value="flashcard"> 字卡模式</label>
 </div>
 
 <div class="section">
-    <label><input type="radio" name="qaMode" value="kana2romaji" checked> 假名 → 羅馬音</label>
-    <label><input type="radio" name="qaMode" value="romaji2kana"> 羅馬音 → 假名</label>
+    <label class="big-label"><input class="big-radio" type="radio" name="qaMode" value="kana2romaji" checked> 假名 → 羅馬音</label>
+    <label class="big-label"><input class="big-radio" type="radio" name="qaMode" value="romaji2kana"> 羅馬音 → 假名</label>
 </div>
 
 <!-- 按鈕 -->
@@ -275,6 +275,16 @@ function checkAnswer(opt, qaMode){
     }
 }
 </script>
+
+<style>
+  .big-label {
+    font-size: 22px;
+  }
+  .big-radio {
+    transform: scale(1.5);
+    margin-right: 5px;
+  }
+</style>
 
 </body>
 </html>
