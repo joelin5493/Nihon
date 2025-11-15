@@ -50,7 +50,7 @@
 </div>
 
 <!-- 按鈕 -->
-<button id="startBtn" onclick="unlockVoice(); newQuestion();" style="font-size:22px;margin:10px;padding:10px 20px;">開始 / 下一題</button>
+<button id="startBtn" onclick="newQuestion()" style="font-size:22px;margin:10px;padding:10px 20px;">開始 / 下一題</button>
 
 <div id="kana">あ</div>
 <div id="romaji">a</div>
@@ -149,7 +149,7 @@ function speakKana(kana, fast=false){
 }
 */
 function speakKana(kana, fast=false){
-    if(!voiceUnlocked) return;
+   // if(!voiceUnlocked) return;
 
     speechSynthesis.cancel();
 
