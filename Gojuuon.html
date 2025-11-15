@@ -151,12 +151,14 @@ function flashClick(){
     const romajiDiv = document.getElementById("romaji");
 
     if(flashStep === 0){
-        romajiDiv.style.display = "block";
+        romajiDiv.style.display = "block"
+		speakKana(answerKana, true);
         flashStep = 1;
-    } else if(flashStep === 1){
+		
+    } /*else if(flashStep === 1){
         speakKana(answerKana, true);
         flashStep = 2;
-    } else {
+    }*/ else {
         newQuestion();
     }
 }
