@@ -218,6 +218,7 @@ let flashStep = 0;
 // ------------------------------------------------------
 // 字卡翻面
 // ------------------------------------------------------
+/*
 function flashClick(){
     const romajiDiv = document.getElementById("romaji");
 
@@ -226,13 +227,31 @@ function flashClick(){
 		speakKana(answerKana, true);
         flashStep = 1;
 		
-    } /*else if(flashStep === 1){
-        speakKana(answerKana, true);
-        flashStep = 2;
-    }*/ else {
+    }  else {
+        newQuestion();
+    }
+}*/
+
+
+function kataToHira(str){
+    return str.replace(/[\u30A1-\u30F6]/g, ch =>
+        String.fromCharCode(ch.charCodeAt(0) - 0x60)
+    );
+}
+
+function flashClick(){
+    const romajiDiv = document.getElementById("romaji");
+
+    if(flashStep === 0){
+        romajiDiv.style.display = "block";
+        speakKana(answerRomaji, true);   // 永遠用 romaji 播音檔
+        flashStep = 1;
+        
+    } else {
         newQuestion();
     }
 }
+
 
 // ------------------------------------------------------
 // 產生題目
@@ -343,6 +362,7 @@ function newQuestion(){
 				speakKana(opt, false);
 			}
 		};
+		
         optDiv.appendChild(btn);
     });
 }
