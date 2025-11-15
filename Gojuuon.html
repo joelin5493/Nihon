@@ -50,7 +50,7 @@
 </div>
 
 <!-- 按鈕 -->
-<button id="startBtn" onclick="newQuestion()" style="font-size:22px;margin:10px;padding:10px 20px;">開始 / 下一題</button>
+<button id="startBtn" onclick="unlockVoice(); newQuestion();" style="font-size:22px;margin:10px;padding:10px 20px;">開始 / 下一題</button>
 
 <div id="kana">あ</div>
 <div id="romaji">a</div>
@@ -106,6 +106,15 @@ const data = {
     ]
 };
 
+function unlockVoice(){
+    let u = new SpeechSynthesisUtterance("あ");
+    u.lang = "ja-JP";
+    speechSynthesis.speak(u);
+    voiceUnlocked = true;
+}
+
+
+
 // 假名 → 片假名
 function hiraToKata(str){
     return str.replace(/[\u3041-\u3096]/g, ch =>
@@ -126,6 +135,7 @@ function findKanaByRomaji(romaji, groups, useHira){
 // ------------------------------------------------------
 // 播放語音（iOS + Android）
 // ------------------------------------------------------
+/*
 function speakKana(kana, fast=false){
     let u = new SpeechSynthesisUtterance(kana);
     u.lang = "ja-JP";
@@ -137,6 +147,19 @@ function speakKana(kana, fast=false){
         console.warn("語音播放失敗：", e);
     }
 }
+*/
+function speakKana(kana, fast=false){
+    if(!voiceUnlocked) return;
+
+    speechSynthesis.cancel();
+
+    let u = new SpeechSynthesisUtterance(kana);
+    u.lang = "ja-JP";
+    u.rate = fast ? 1.1 : 0.9;
+
+    speechSynthesis.speak(u);
+}
+
 
 let selectedGroups = [];
 let answerRomaji = "";
