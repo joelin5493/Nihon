@@ -65,7 +65,7 @@
 
 let voiceUnlocked = false;
 
-
+let audioPlayer = new Audio();
 // ------------------------------------------------------
 // 假名資料
 // ------------------------------------------------------
@@ -105,6 +105,47 @@ const data = {
         ["ぴゃ","pya"],["ぴゅ","pyu"],["ぴょ","pyo"]
     ]
 };
+
+const audioMap = {
+    // 清音
+    "a":"audio/a.mp3","i":"audio/i.mp3","u":"audio/u.mp3","e":"audio/e.mp3","o":"audio/o.mp3",
+    "ka":"audio/ka.mp3","ki":"audio/ki.mp3","ku":"audio/ku.mp3","ke":"audio/ke.mp3","ko":"audio/ko.mp3",
+    "sa":"audio/sa.mp3","shi":"audio/shi.mp3","su":"audio/su.mp3","se":"audio/se.mp3","so":"audio/so.mp3",
+    "ta":"audio/ta.mp3","chi":"audio/chi.mp3","tsu":"audio/tsu.mp3","te":"audio/te.mp3","to":"audio/to.mp3",
+    "na":"audio/na.mp3","ni":"audio/ni.mp3","nu":"audio/nu.mp3","ne":"audio/ne.mp3","no":"audio/no.mp3",
+    "ha":"audio/ha.mp3","hi":"audio/hi.mp3","fu":"audio/fu.mp3","he":"audio/he.mp3","ho":"audio/ho.mp3",
+    "ma":"audio/ma.mp3","mi":"audio/mi.mp3","mu":"audio/mu.mp3","me":"audio/me.mp3","mo":"audio/mo.mp3",
+    "ya":"audio/ya.mp3","yu":"audio/yu.mp3","yo":"audio/yo.mp3",
+    "ra":"audio/ra.mp3","ri":"audio/ri.mp3","ru":"audio/ru.mp3","re":"audio/re.mp3","ro":"audio/ro.mp3",
+    "wa":"audio/wa.mp3","wo":"audio/wo.mp3","n":"audio/n.mp3",
+
+    // 濁音
+    "ga":"audio/ga.mp3","gi":"audio/gi.mp3","gu":"audio/gu.mp3","ge":"audio/ge.mp3","go":"audio/go.mp3",
+    "za":"audio/za.mp3","ji":"audio/ji.mp3","zu":"audio/zu.mp3","ze":"audio/ze.mp3","zo":"audio/zo.mp3",
+    "da":"audio/da.mp3","ji":"audio/ji.mp3","du":"audio/du.mp3","de":"audio/de.mp3","do":"audio/do.mp3",
+    "ba":"audio/ba.mp3","bi":"audio/bi.mp3","bu":"audio/bu.mp3","be":"audio/be.mp3","bo":"audio/bo.mp3",
+
+    // 半濁音
+    "pa":"audio/pa.mp3","pi":"audio/pi.mp3","pu":"audio/pu.mp3","pe":"audio/pe.mp3","po":"audio/po.mp3",
+
+    // 拗音（清音）
+    "kya":"audio/kya.mp3","kyu":"audio/kyu.mp3","kyo":"audio/kyo.mp3",
+    "sha":"audio/sha.mp3","shu":"audio/shu.mp3","sho":"audio/sho.mp3",
+    "cha":"audio/cha.mp3","chu":"audio/chu.mp3","cho":"audio/cho.mp3",
+    "nya":"audio/nya.mp3","nyu":"audio/nyu.mp3","nyo":"audio/nyo.mp3",
+    "hya":"audio/hya.mp3","hyu":"audio/hyu.mp3","hyo":"audio/hyo.mp3",
+    "mya":"audio/mya.mp3","myu":"audio/myu.mp3","myo":"audio/myo.mp3",
+    "rya":"audio/rya.mp3","ryu":"audio/ryu.mp3","ryo":"audio/ryo.mp3",
+
+    // 拗音（濁音）
+    "gya":"audio/gya.mp3","gyu":"audio/gyu.mp3","gyo":"audio/gyo.mp3",
+    "ja":"audio/ja.mp3","ju":"audio/ju.mp3","jo":"audio/jo.mp3",
+    "bya":"audio/bya.mp3","byu":"audio/byu.mp3","byo":"audio/byo.mp3",  
+
+    // 拗音（半濁音）
+    "pya":"audio/pya.mp3","pyu":"audio/pyu.mp3","pyo":"audio/pyo.mp3"
+};
+
 
 function unlockVoice(){
     let u = new SpeechSynthesisUtterance("あ");
@@ -148,18 +189,25 @@ function speakKana(kana, fast=false){
     }
 }
 */
-function speakKana(kana, fast=false){
-   // if(!voiceUnlocked) return;
 
-    speechSynthesis.cancel();
+function speakKana(key, shouldNext){
+    if(audioMap[key]){
+        audioPlayer.src = audioMap[key];
 
-    let u = new SpeechSynthesisUtterance(kana);
-    u.lang = "ja-JP";
-    u.rate = fast ? 1.1 : 0.9;
+        audioPlayer.onended = () => {
+            if(shouldNext){
+                newQuestion();
+            }
+        };
 
-    speechSynthesis.speak(u);
+        audioPlayer.play().catch(e=>{
+            console.warn("播放失敗：", e);
+        });
+
+    } else {
+        console.warn("找不到音檔：", key);
+    }
 }
-
 
 let selectedGroups = [];
 let answerRomaji = "";
@@ -170,6 +218,7 @@ let flashStep = 0;
 // ------------------------------------------------------
 // 字卡翻面
 // ------------------------------------------------------
+/*
 function flashClick(){
     const romajiDiv = document.getElementById("romaji");
 
@@ -178,13 +227,31 @@ function flashClick(){
 		speakKana(answerKana, true);
         flashStep = 1;
 		
-    } /*else if(flashStep === 1){
-        speakKana(answerKana, true);
-        flashStep = 2;
-    }*/ else {
+    }  else {
+        newQuestion();
+    }
+}*/
+
+
+function kataToHira(str){
+    return str.replace(/[\u30A1-\u30F6]/g, ch =>
+        String.fromCharCode(ch.charCodeAt(0) - 0x60)
+    );
+}
+
+function flashClick(){
+    const romajiDiv = document.getElementById("romaji");
+
+    if(flashStep === 0){
+        romajiDiv.style.display = "block";
+        speakKana(answerRomaji, true);   // 永遠用 romaji 播音檔
+        flashStep = 1;
+        
+    } else {
         newQuestion();
     }
 }
+
 
 // ------------------------------------------------------
 // 產生題目
@@ -241,8 +308,7 @@ function newQuestion(){
     if(qaMode === "kana2romaji"){
         kanaDiv.textContent = answerKana;
         choiceSet.add(answerRomaji);
-
-        while(choiceSet.size < 6){
+        while(choiceSet.size < 5){
             let g = pool[Math.floor(Math.random()*pool.length)];
             let r = g[Math.floor(Math.random()*g.length)][1];
             choiceSet.add(r);
@@ -251,8 +317,7 @@ function newQuestion(){
     } else {
         kanaDiv.textContent = answerRomaji;
         choiceSet.add(answerKana);
-
-        while(choiceSet.size < 6){
+        while(choiceSet.size < 5){
             let g = pool[Math.floor(Math.random()*pool.length)];
             let [kana] = g[Math.floor(Math.random()*g.length)];
             let kanaOut = useHira ? kana : hiraToKata(kana);
@@ -273,7 +338,7 @@ function newQuestion(){
 			margin: 10px auto;
 			padding: 10px 20px;
 		`;
-
+		/*
         btn.onclick = () => {
             if(qaMode === "kana2romaji"){
                 let kanaSpeak = findKanaByRomaji(opt, selectedGroups, useHira);
@@ -282,21 +347,42 @@ function newQuestion(){
                 speakKana(opt);
             }
             checkAnswer(opt, qaMode);
-        };
+        };*/
+		
+		btn.onclick = () => {
+			let correct = checkAnswer(opt, qaMode);
 
+			if(correct){
+				// 答對 → 播音檔後切下一題
+				speakKana(opt, true);
+			} else {
+				// 答錯 → 播音檔但不切下一題
+				speakKana(opt, false);
+			}
+		};
+		
         optDiv.appendChild(btn);
     });
 }
 
 function checkAnswer(opt, qaMode){
     if(qaMode === "kana2romaji"){
-        if(opt === answerRomaji) newQuestion();
-        else message.textContent = "再試一次！";
+        if(opt === answerRomaji){
+            return true;
+        } else {
+            message.textContent = "再試一次！";
+            return false;
+        }
     } else {
-        if(opt === answerKana) newQuestion();
-        else message.textContent = "再試一次！";
+        if(opt === answerKana){
+            return true;
+        } else {
+            message.textContent = "再試一次！";
+            return false;
+        }
     }
 }
+
 </script>
 
 <style>
