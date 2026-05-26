@@ -17,20 +17,34 @@
     }
     #message { font-size: 22px; height: 40px; color: red; }
     .section { margin: 15px 0; }
-    .note { color: #555; font-size: 16px; margin-top: 10px; }
+    .big-label { font-size: 22px; margin: 0 5px; display: inline-block; }
+    .big-radio { transform: scale(1.5); margin-right: 5px; }
+    
+    /* 新增導覽按鈕樣式 */
+    .nav-btn {
+        background-color: #008CBA;
+        color: white;
+        border: none;
+        padding: 12px 24px;
+        font-size: 20px;
+        cursor: pointer;
+        border-radius: 4px;
+        margin-bottom: 20px;
+    }
+    .nav-btn:hover { background-color: #007B9A; }
 </style>
 </head>
 <body>
 
+<button class="nav-btn" onclick="window.location.href='advanced.html'">➡️ 切換至【生活日語學習：錢/時間/星期】</button>
+
 <h1>五十音練習（清音 / 濁音 / 半濁音 / 拗音 / 字卡模式）</h1>
 
-<!-- 類型 -->
 <div class="section">
     <label class="big-label"><input class="big-radio" type="radio" name="type" value="hiragana" checked> 平假名</label>
     <label class="big-label"><input class="big-radio" type="radio" name="type" value="katakana"> 片假名</label>
 </div>
 
-<!-- 題庫 -->
 <div class="section">
     <label class="big-label"><input class="big-radio" type="checkbox" id="chk-basic" checked> 清音</label>
     <label class="big-label"><input class="big-radio" type="checkbox" id="chk-dakuon"> 濁音</label>
@@ -38,7 +52,6 @@
     <label class="big-label"><input class="big-radio" type="checkbox" id="chk-youon"> 拗音</label>
 </div>
 
-<!-- 模式 -->
 <div class="section">
     <label class="big-label"><input class="big-radio" type="radio" name="mode" value="quiz" checked> 測驗模式</label>
     <label class="big-label"><input class="big-radio" type="radio" name="mode" value="flashcard"> 字卡模式</label>
@@ -49,7 +62,6 @@
     <label class="big-label"><input class="big-radio" type="radio" name="qaMode" value="romaji2kana"> 羅馬音 → 假名</label>
 </div>
 
-<!-- 按鈕 -->
 <button id="startBtn" onclick="newQuestion()" style="font-size:22px;margin:10px;padding:10px 20px;">開始 / 下一題</button>
 
 <div id="kana">あ</div>
@@ -59,15 +71,10 @@
 <div id="message"></div>
 
 <script>
-// ------------------------------------------------------
-// iOS / Android 語音解鎖（新版可用）
-// ------------------------------------------------------
-
-let voiceUnlocked = false;
-
 let audioPlayer = new Audio();
+
 // ------------------------------------------------------
-// 假名資料
+// 原始假名資料
 // ------------------------------------------------------
 const data = {
     basic: [
@@ -85,7 +92,7 @@ const data = {
     dakuon: [
         ["が","ga"],["ぎ","gi"],["ぐ","gu"],["げ","ge"],["ご","go"],
         ["ざ","za"],["じ","ji"],["ず","zu"],["ぜ","ze"],["ぞ","zo"],
-        ["だ","da"],["ぢ","ji"],["づ","zu"],["で","de"],["ど","do"],
+        ["だ","da"],["ぢ","ji"],["づ","zu"],["て","de"],["ど","do"],
         ["ば","ba"],["び","bi"],["ぶ","bu"],["べ","be"],["ぼ","bo"]
     ],
     handakuon: [
@@ -107,7 +114,6 @@ const data = {
 };
 
 const audioMap = {
-    // 清音
     "a":"audio/a.mp3","i":"audio/i.mp3","u":"audio/u.mp3","e":"audio/e.mp3","o":"audio/o.mp3",
     "ka":"audio/ka.mp3","ki":"audio/ki.mp3","ku":"audio/ku.mp3","ke":"audio/ke.mp3","ko":"audio/ko.mp3",
     "sa":"audio/sa.mp3","shi":"audio/shi.mp3","su":"audio/su.mp3","se":"audio/se.mp3","so":"audio/so.mp3",
@@ -118,17 +124,11 @@ const audioMap = {
     "ya":"audio/ya.mp3","yu":"audio/yu.mp3","yo":"audio/yo.mp3",
     "ra":"audio/ra.mp3","ri":"audio/ri.mp3","ru":"audio/ru.mp3","re":"audio/re.mp3","ro":"audio/ro.mp3",
     "wa":"audio/wa.mp3","wo":"audio/wo.mp3","n":"audio/n.mp3",
-
-    // 濁音
     "ga":"audio/ga.mp3","gi":"audio/gi.mp3","gu":"audio/gu.mp3","ge":"audio/ge.mp3","go":"audio/go.mp3",
     "za":"audio/za.mp3","ji":"audio/ji.mp3","zu":"audio/zu.mp3","ze":"audio/ze.mp3","zo":"audio/zo.mp3",
-    "da":"audio/da.mp3","ji":"audio/ji.mp3","du":"audio/du.mp3","de":"audio/de.mp3","do":"audio/do.mp3",
+    "da":"audio/da.mp3","du":"audio/du.mp3","de":"audio/de.mp3","do":"audio/do.mp3",
     "ba":"audio/ba.mp3","bi":"audio/bi.mp3","bu":"audio/bu.mp3","be":"audio/be.mp3","bo":"audio/bo.mp3",
-
-    // 半濁音
     "pa":"audio/pa.mp3","pi":"audio/pi.mp3","pu":"audio/pu.mp3","pe":"audio/pe.mp3","po":"audio/po.mp3",
-
-    // 拗音（清音）
     "kya":"audio/kya.mp3","kyu":"audio/kyu.mp3","kyo":"audio/kyo.mp3",
     "sha":"audio/sha.mp3","shu":"audio/shu.mp3","sho":"audio/sho.mp3",
     "cha":"audio/cha.mp3","chu":"audio/chu.mp3","cho":"audio/cho.mp3",
@@ -136,126 +136,42 @@ const audioMap = {
     "hya":"audio/hya.mp3","hyu":"audio/hyu.mp3","hyo":"audio/hyo.mp3",
     "mya":"audio/mya.mp3","myu":"audio/myu.mp3","myo":"audio/myo.mp3",
     "rya":"audio/rya.mp3","ryu":"audio/ryu.mp3","ryo":"audio/ryo.mp3",
-
-    // 拗音（濁音）
     "gya":"audio/gya.mp3","gyu":"audio/gyu.mp3","gyo":"audio/gyo.mp3",
     "ja":"audio/ja.mp3","ju":"audio/ju.mp3","jo":"audio/jo.mp3",
     "bya":"audio/bya.mp3","byu":"audio/byu.mp3","byo":"audio/byo.mp3",
-
-    // 拗音（半濁音）
     "pya":"audio/pya.mp3","pyu":"audio/pyu.mp3","pyo":"audio/pyo.mp3"
 };
 
-
-function unlockVoice(){
-    let u = new SpeechSynthesisUtterance("あ");
-    u.lang = "ja-JP";
-    speechSynthesis.speak(u);
-    voiceUnlocked = true;
-}
-
-
-
-// 假名 → 片假名
 function hiraToKata(str){
-    return str.replace(/[\u3041-\u3096]/g, ch =>
-        String.fromCharCode(ch.charCodeAt(0) + 0x60)
-    );
+    return str.replace(/[\u3041-\u3096]/g, ch => String.fromCharCode(ch.charCodeAt(0) + 0x60));
 }
-
-function findKanaByRomaji(romaji, groups, useHira){
-    for(let g of groups){
-        for(let [kana, roma] of g){
-            if(romaji === roma)
-                return useHira ? kana : hiraToKata(kana);
-        }
-    }
-    return "";
-}
-
-// ------------------------------------------------------
-// 播放語音（iOS + Android）
-// ------------------------------------------------------
-/*
-function speakKana(kana, fast=false){
-    let u = new SpeechSynthesisUtterance(kana);
-    u.lang = "ja-JP";
-    u.rate = fast ? 1.1 : 0.9;
-
-    try {
-        speechSynthesis.speak(u);
-    } catch(e){
-        console.warn("語音播放失敗：", e);
-    }
-}
-*/
 
 function speakKana(key, shouldNext){
     if(audioMap[key]){
         audioPlayer.src = audioMap[key];
-
-        audioPlayer.onended = () => {
-            if(shouldNext){
-                newQuestion();
-            }
-        };
-
-        audioPlayer.play().catch(e=>{
-            console.warn("播放失敗：", e);
-        });
-
+        audioPlayer.onended = () => { if(shouldNext) newQuestion(); };
+        audioPlayer.play().catch(e => console.warn("播放失敗：", e));
     } else {
-        console.warn("找不到音檔：", key);
+        if(shouldNext) newQuestion();
     }
 }
 
-let selectedGroups = [];
 let answerRomaji = "";
 let answerKana = "";
 let useHira = true;
 let flashStep = 0;
 
-// ------------------------------------------------------
-// 字卡翻面
-// ------------------------------------------------------
-/*
 function flashClick(){
     const romajiDiv = document.getElementById("romaji");
-
-    if(flashStep === 0){
-        romajiDiv.style.display = "block"
-		speakKana(answerKana, true);
-        flashStep = 1;
-		
-    }  else {
-        newQuestion();
-    }
-}*/
-
-
-function kataToHira(str){
-    return str.replace(/[\u30A1-\u30F6]/g, ch =>
-        String.fromCharCode(ch.charCodeAt(0) - 0x60)
-    );
-}
-
-function flashClick(){
-    const romajiDiv = document.getElementById("romaji");
-
     if(flashStep === 0){
         romajiDiv.style.display = "block";
-        speakKana(answerRomaji, true);   // 永遠用 romaji 播音檔
+        speakKana(answerRomaji, true);
         flashStep = 1;
-        
     } else {
         newQuestion();
     }
 }
 
-
-// ------------------------------------------------------
-// 產生題目
-// ------------------------------------------------------
 function newQuestion(){
     useHira = document.querySelector("input[name=type]:checked").value === "hiragana";
     const mode = document.querySelector("input[name=mode]:checked").value;
@@ -272,8 +188,6 @@ function newQuestion(){
         return;
     }
 
-    selectedGroups = pool;
-
     let group = pool[Math.floor(Math.random()*pool.length)];
     let [kana, romaji] = group[Math.floor(Math.random()*group.length)];
 
@@ -289,7 +203,6 @@ function newQuestion(){
     kanaDiv.textContent = answerKana;
     msg.textContent = "";
 
-    // 字卡模式
     if(mode === "flashcard"){
         optDiv.style.display = "none";
         romajiDiv.style.display = "none";
@@ -298,13 +211,11 @@ function newQuestion(){
         return;
     }
 
-    // 測驗模式
     kanaDiv.onclick = null;
     optDiv.style.display = "block";
     romajiDiv.style.display = "none";
 
     let choiceSet = new Set();
-
     if(qaMode === "kana2romaji"){
         kanaDiv.textContent = answerKana;
         choiceSet.add(answerRomaji);
@@ -313,15 +224,13 @@ function newQuestion(){
             let r = g[Math.floor(Math.random()*g.length)][1];
             choiceSet.add(r);
         }
-
     } else {
         kanaDiv.textContent = answerRomaji;
         choiceSet.add(answerKana);
         while(choiceSet.size < 5){
             let g = pool[Math.floor(Math.random()*pool.length)];
-            let [kana] = g[Math.floor(Math.random()*g.length)];
-            let kanaOut = useHira ? kana : hiraToKata(kana);
-            choiceSet.add(kanaOut);
+            let [k] = g[Math.floor(Math.random()*g.length)];
+            choiceSet.add(useHira ? k : hiraToKata(k));
         }
     }
 
@@ -333,67 +242,27 @@ function newQuestion(){
         btn.className = "option-btn";
         btn.textContent = opt;
 		
-		btn.style.cssText = `
-			font-size: 24px;
-			margin: 10px auto;
-			padding: 10px 20px;
-		`;
-		/*
-        btn.onclick = () => {
-            if(qaMode === "kana2romaji"){
-                let kanaSpeak = findKanaByRomaji(opt, selectedGroups, useHira);
-                speakKana(kanaSpeak);
-            } else {
-                speakKana(opt);
-            }
-            checkAnswer(opt, qaMode);
-        };*/
-		
 		btn.onclick = () => {
-			let correct = checkAnswer(opt, qaMode);
-
+			let correct = (qaMode === "kana2romaji") ? (opt === answerRomaji) : (opt === answerKana);
 			if(correct){
-				// 答對 → 播音檔後切下一題
-				speakKana(opt, true);
+				speakKana(answerRomaji, true);
 			} else {
-				// 答錯 → 播音檔但不切下一題
-				speakKana(opt, false);
+				msg.textContent = "再試一次！";
+                if(qaMode === "romaji2kana") speakKana(findRomajiByKana(opt), false);
 			}
 		};
-		
         optDiv.appendChild(btn);
     });
 }
 
-function checkAnswer(opt, qaMode){
-    if(qaMode === "kana2romaji"){
-        if(opt === answerRomaji){
-            return true;
-        } else {
-            message.textContent = "再試一次！";
-            return false;
-        }
-    } else {
-        if(opt === answerKana){
-            return true;
-        } else {
-            message.textContent = "再試一次！";
-            return false;
+function findRomajiByKana(kanaStr) {
+    for (let key in data) {
+        for (let pair of data[key]) {
+            if (pair[0] === kanaStr || hiraToKata(pair[0]) === kanaStr) return pair[1];
         }
     }
+    return "";
 }
-
 </script>
-
-<style>
-  .big-label {
-    font-size: 22px;
-  }
-  .big-radio {
-    transform: scale(1.5);
-    margin-right: 5px;
-  }
-</style>
-
 </body>
 </html>
