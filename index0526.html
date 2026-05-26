@@ -83,7 +83,7 @@ const data = {
     dakuon: [
         ["が","ga"],["ぎ","gi"],["ぐ","gu"],["げ","ge"],["ご","go"],
         ["ざ","za"],["じ","ji"],["ず","zu"],["ぜ","ze"],["ぞ","zo"],
-        ["だ","da"],["ぢ","ji"],["づ","zu"],["で","de"],["ど","do"],
+        ["だ","da"],["ぢ","ji"],["づ","zu"],["де","de"],["ど","do"],
         ["ば","ba"],["び","bi"],["ぶ","bu"],["べ","be"],["ぼ","bo"]
     ],
     handakuon: [
@@ -103,7 +103,7 @@ const data = {
         ["ぴゃ","pya"],["ぴゅ","pyu"],["ぴょ","pyo"]
     ],
     week: [
-        ["月曜日 (星期一)","getsubi"], ["火曜日 (星期二)","kayōbi"],
+        ["月曜日 (星期一)","getsuyōbi"], ["火曜日 (星期二)","kayōbi"],
         ["水曜日 (星期三)","suiyōbi"], ["木曜日 (星期四)","mokuyōbi"],
         ["金曜日 (星期五)","kinyōbi"], ["土曜日 (星期六)","doyōbi"],
         ["日曜日 (星期日)","nichiyōbi"]
@@ -118,7 +118,7 @@ const audioMap = {
     "na":"audio/na.mp3","ni":"audio/ni.mp3","nu":"audio/nu.mp3","ne":"audio/ne.mp3","no":"audio/no.mp3",
     "ha":"audio/ha.mp3","hi":"audio/hi.mp3","fu":"audio/fu.mp3","he":"audio/he.mp3","ho":"audio/ho.mp3",
     "ma":"audio/ma.mp3","mi":"audio/mi.mp3","mu":"audio/mu.mp3","me":"audio/me.mp3","mo":"audio/mo.mp3",
-    "ya":"audio/ya.mp3","yu":"audio/yu.mp3","yo":"audio/yo.mp3",
+    "ya":"audio/ya.mp3","ゆ","yu","yo":"audio/yo.mp3",
     "ra":"audio/ra.mp3","ri":"audio/ri.mp3","ru":"audio/ru.mp3","re":"audio/re.mp3","ro":"audio/ro.mp3",
     "wa":"audio/wa.mp3","wo":"audio/wo.mp3","n":"audio/n.mp3",
     "ga":"audio/ga.mp3","gi":"audio/gi.mp3","gu":"audio/gu.mp3","ge":"audio/ge.mp3","go":"audio/go.mp3",
@@ -136,10 +136,7 @@ const audioMap = {
     "gya":"audio/gya.mp3","gyu":"audio/gyu.mp3","gyo":"audio/gyo.mp3",
     "ja":"audio/ja.mp3","ju":"audio/ju.mp3","jo":"audio/jo.mp3",
     "bya":"audio/bya.mp3","byu":"audio/byu.mp3","byo":"audio/byo.mp3",
-    "pya":"audio/pya.mp3","pyu":"audio/pyu.mp3","pyo":"audio/pyo.mp3",
-    "getsubi":"audio/getsubi.mp3","kayōbi":"audio/kayōbi.mp3","suiyōbi":"audio/suiyōbi.mp3",
-    "mokuyōbi":"audio/mokuyōbi.mp3","kinyōbi":"audio/kinyōbi.mp3","doyōbi":"audio/doyōbi.mp3",
-    "nichiyōbi":"audio/nichiyōbi.mp3"
+    "pya":"audio/pya.mp3","pyu":"audio/pyu.mp3","pyo":"audio/pyo.mp3"
 };
 
 // ------------------------------------------------------
@@ -155,7 +152,6 @@ function parseJapaneseNumber(num) {
     let rParts = [];
     let temp = num;
 
-    // 萬位
     let man = Math.floor(temp / 10000);
     if (man > 0) {
         let p = parseThousands(man);
@@ -164,7 +160,6 @@ function parseJapaneseNumber(num) {
         temp %= 10000;
     }
     
-    // 萬以下
     if (temp > 0 || parts.length === 0) {
         let p = parseThousands(temp);
         if (p.kanji !== "") {
@@ -183,7 +178,6 @@ function parseThousands(n) {
     let kanji = "";
     let romaji = [];
     
-    // 千位
     let q = Math.floor(n / 1000);
     if (q > 0) {
         if (q === 1) { kanji += "千"; romaji.push("sen"); }
@@ -192,7 +186,6 @@ function parseThousands(n) {
         else { kanji += numKanji[q] + "千"; romaji.push(numRomaji[q] + "-sen"); }
         n %= 1000;
     }
-    // 百位
     let h = Math.floor(n / 100);
     if (h > 0) {
         if (h === 1) { kanji += "百"; romaji.push("hyaku"); }
@@ -202,83 +195,75 @@ function parseThousands(n) {
         else { kanji += numKanji[h] + "百"; romaji.push(numRomaji[h] + "-hyaku"); }
         n %= 100;
     }
-    // 十位
     let t = Math.floor(n / 10);
     if (t > 0) {
         if (t === 1) { kanji += "十"; romaji.push("jū"); }
         else { kanji += numKanji[t] + "十"; romaji.push(numRomaji[t] + "-jū"); }
         n %= 10;
     }
-    // 個位
     if (n > 0) {
         kanji += numKanji[n];
         romaji.push(numRomaji[n]);
     }
-    
     return { kanji, romaji: romaji.join("-") };
 }
 
-// 產生隨機金錢 (範圍：100 ~ 999,999)
 function generateRandomMoney() {
-    // 隨機選一種數字型態：百、千、萬、數萬、數十萬
     const types = [
-        () => Math.floor(Math.random() * 900) + 100,             // 三位數
-        () => Math.floor(Math.random() * 9000) + 1000,           // 四位數
-        () => Math.floor(Math.random() * 90000) + 10000,         // 五位數
-        () => Math.floor(Math.random() * 900000) + 100000        // 六位數 (例如 329899)
+        () => Math.floor(Math.random() * 900) + 100,
+        () => Math.floor(Math.random() * 9000) + 1000,
+        () => Math.floor(Math.random() * 90000) + 10000,
+        () => Math.floor(Math.random() * 900000) + 100000
     ];
     let num = types[Math.floor(Math.random() * types.length)]();
     let p = parseJapaneseNumber(num);
-    
     return [
         `${num.toLocaleString()}円 (${p.kanji}えん)`,
         `${p.romaji}-en`,
-        `${num}円` // 用於 TTS 語音朗讀
+        `${num}えん`
     ];
 }
 
-// 產生隨機時間 (時 + 分)
 function generateRandomTime() {
     const hoursKanji = ["", "一時", "二時", "三時", "四時", "五時", "六時", "七時", "八時", "九時", "十時", "十一時", "十二時"];
     const hoursRoma  = ["", "ichi-ji", "ni-ji", "san-ji", "yo-ji", "go-ji", "roku-ji", "shichi-ji", "hachi-ji", "ku-ji", "jū-ji", "jūichi-ji", "jūni-ji"];
-    
     const minPool = [
-        {k: "五分", r: "go-fun", v: 5},
-        {k: "十分", r: "jippun", v: 10},
-        {k: "十五分", r: "jūgo-fun", v: 15},
-        {k: "三十分 (半)", r: "sanjippun (han)", v: 30},
-        {k: "四十五分", r: "yonjūgo-fun", v: 45}
+        {k: "五分", r: "go-fun", v: 5, tts: "ごふん"},
+        {k: "十分", r: "jippun", v: 10, tts: "じゅっぷん"},
+        {k: "十五分", r: "jūgo-fun", v: 15, tts: "じゅうごふん"},
+        {k: "三十分 (半)", r: "sanjippun (han)", v: 30, tts: "はん"},
+        {k: "四十五分", r: "yonjūgo-fun", v: 45, tts: "よんじゅうごふん"}
     ];
-    
     let h = Math.floor(Math.random() * 12) + 1;
     let mObj = minPool[Math.floor(Math.random() * minPool.length)];
-    
     return [
         `${h}時${mObj.v}分 (${hoursKanji[h]}${mObj.k.replace(' (半)','')})`,
         `${hoursRoma[h]}-${mObj.r}`,
-        `${h}時${mObj.v}分` // 用於 TTS 語音朗讀
+        `${hoursKanji[h]}${mObj.tts}`
     ];
 }
 
 // ------------------------------------------------------
-// 智慧語音播放系統 (音檔分流 + TTS)
+// 語音播放系統 (音檔分流 + TTS)
 // ------------------------------------------------------
-let currentTTSText = ""; // 儲存當前動態文字
+let currentTTSText = ""; 
 
 function speakOutput(key, shouldNext) {
-    // 優先檢查是否為固定假名/星期的音檔路徑
     if(audioMap[key]){
         audioPlayer.src = audioMap[key];
         audioPlayer.onended = () => { if(shouldNext) newQuestion(); };
         audioPlayer.play().catch(e => console.warn("音檔播放失敗：", e));
     } 
-    // 若無音檔，則採用內建高音質 Web Speech API 進行日語合成
     else if (currentTTSText) {
+        // 取消目前所有播放中語音，避免重疊
+        speechSynthesis.cancel();
         let u = new SpeechSynthesisUtterance(currentTTSText);
         u.lang = "ja-JP";
-        u.rate = 0.9;
+        u.rate = 0.85;
         u.onend = () => { if(shouldNext) newQuestion(); };
         speechSynthesis.speak(u);
+    } else {
+        if(shouldNext) newQuestion();
     }
 }
 
@@ -325,13 +310,11 @@ function newQuestion(){
         return;
     }
 
-    // 隨機抽選大類
     currentQuestionType = poolTokens[Math.floor(Math.random() * poolTokens.length)];
     currentTTSText = ""; 
 
     let kana = "", romaji = "";
     
-    // 依據題型動態生成或靜態抓取
     if (currentQuestionType === "money") {
         let res = generateRandomMoney();
         kana = res[0]; romaji = res[1]; currentTTSText = res[2];
@@ -340,7 +323,8 @@ function newQuestion(){
         kana = res[0]; romaji = res[1]; currentTTSText = res[2];
     } else if (currentQuestionType === "week") {
         let res = data.week[Math.floor(Math.random() * data.week.length)];
-        kana = res[0]; romaji = res[1]; currentTTSText = res[0].split(" ")[0];
+        kana = res[0]; romaji = res[1]; 
+        currentTTSText = res[0].split(" ")[0]; // 只提取 "月曜日" 進行 TTS 語音朗讀
     } else {
         let res = data[currentQuestionType][Math.floor(Math.random() * data[currentQuestionType].length)];
         kana = useHira ? res[0] : hiraToKata(res[0]);
@@ -359,7 +343,6 @@ function newQuestion(){
     kanaDiv.textContent = answerKana;
     msg.textContent = "";
 
-    // 字卡模式
     if(mode === "flashcard"){
         optDiv.style.display = "none";
         romajiDiv.style.display = "none";
@@ -368,7 +351,6 @@ function newQuestion(){
         return;
     }
 
-    // 測驗模式
     kanaDiv.onclick = null;
     optDiv.style.display = "block";
     romajiDiv.style.display = "none";
@@ -376,7 +358,6 @@ function newQuestion(){
     let choiceSet = new Set();
     choiceSet.add(qaMode === "kana2romaji" ? answerRomaji : answerKana);
 
-    // 產生干擾選項
     while(choiceSet.size < 4) {
         if (currentQuestionType === "money") {
             let item = generateRandomMoney();
@@ -385,16 +366,13 @@ function newQuestion(){
             let item = generateRandomTime();
             choiceSet.add(qaMode === "kana2romaji" ? item[1] : item[0]);
         } else if (currentQuestionType === "week") {
-            let item = data.week[Math.floor(Math.random() * data.week.length)];
-            choiceSet.add(qaMode === "kana2romaji" ? item[1] : item[0]);
+            let item = data.week[Math.floor(Math.random() * data.week.length)][0];
+            choiceSet.add(qaMode === "kana2romaji" ? data.week.find(x=>x[0]===item)[1] : item);
         } else {
-            // 五十音類干擾項
             let randomType = ["basic", "dakuon", "handakuon", "youon"][Math.floor(Math.random()*4)];
-            if(document.getElementById(`chk-${randomType}`).checked || true) {
-                let item = data[randomType][Math.floor(Math.random() * data[randomType].length)];
-                let kOut = useHira ? item[0] : hiraToKata(item[0]);
-                choiceSet.add(qaMode === "kana2romaji" ? item[1] : kOut);
-            }
+            let item = data[randomType][Math.floor(Math.random() * data[randomType].length)];
+            let kOut = useHira ? item[0] : hiraToKata(item[0]);
+            choiceSet.add(qaMode === "kana2romaji" ? item[1] : kOut);
         }
     }
 
@@ -409,17 +387,38 @@ function newQuestion(){
 		btn.onclick = () => {
 			let isCorrect = (qaMode === "kana2romaji") ? (opt === answerRomaji) : (opt === answerKana);
 			if(isCorrect){
-				speakOutput(answerRomaji, true); // 答對：發音並切下一題
+				speakOutput(answerRomaji, true); 
 			} else {
 				msg.textContent = "再試一次！";
-                // 答錯：如果是五十音或星期就嘗試播錯誤音檔，動態產生的項目不發音以免混淆
-                if(currentQuestionType !== "money" && currentQuestionType !== "time" && qaMode === "kana2romaji"){
-                    speakOutput(opt, false);
+                // 答錯時設定該選項的臨時 TTS 文本發音
+                if(qaMode === "romaji2kana") {
+                    if(currentQuestionType === "week" || currentQuestionType === "money" || currentQuestionType === "time") {
+                        currentTTSText = opt.split(" ")[0];
+                        speakOutput("", false);
+                    } else {
+                        speakOutput(findRomajiByKana(opt), false);
+                    }
+                } else {
+                    // 羅馬音模式答錯不另外發音以免混淆
+                    if(currentQuestionType !== "money" && currentQuestionType !== "time" && currentQuestionType !== "week"){
+                        speakOutput(opt, false);
+                    }
                 }
 			}
 		};
         optDiv.appendChild(btn);
     });
+}
+
+function findRomajiByKana(kanaStr) {
+    for (let key in data) {
+        for (let pair of data[key]) {
+            if (pair[0] === kanaStr || hiraToKata(pair[0]) === kanaStr) {
+                return pair[1];
+            }
+        }
+    }
+    return "";
 }
 </script>
 </body>
